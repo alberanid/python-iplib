@@ -1,0 +1,32 @@
+  version 1.1 (13 feb 2008)
+- fixed a bug comparing CIDRs for inclusion.
+
+
+  version 1.0 (23 may 2006)
+- iteration over CIDR object.
+- comparison operators for addresses, netmasks and cidr objects.
+- augmented and reflected arithmetic operations for IP addresses.
+- notation autodetection now firstly check if the given IP/netmask is
+  in bits notation (for netmasks) or in decimal notation (for IPs).
+- cleaned the code and dropped compatibility with Python 1.5 (at least
+  python 2.3 is required.
+- renamed scripts adding ".py" extension.
+- used boolean values instead of 0 and 1.
+- faster conversion operators.
+- changed the "iformat" argument of convert and convert_nm functions to
+  "inotation".
+- added some properties for addresses, netmasks and cidr objects.
+- CIDR.is_valid_ip method now manage the /31 netmask case more logically.
+- summing/subtracting addresses is more cleaner.
+- fixed some typos.
+- improved the test suite.
+
+
+  version 0.9 (16 oct 2005)
+- support for CIDR object in the is_valid_ip() method of the CIDR class.
+
+
+  version 0.8 (15 feb 2005)
+- support for /31 netmask.
+
+

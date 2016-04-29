@@ -1,0 +1,11 @@
+
+ iplib TODO
+
+- support for IPv6.
+- a hierarchy of exceptions.
+- cleanup the code (it's ugly! :)
+- improve performances.
+- better documentation.
+- some pretty-printing functions.
+- the CIDR class can provide more information.
+

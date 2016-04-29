@@ -1,0 +1,115 @@
+
+  iplib scripts
+  -------------
+
+  ipconv
+  ------
+
+This script show hot to use the IPv4Address class of the iplib module.
+
+Given an IP address, show the IP in various notations.
+Requires one argument: the IP address.
+Options:
+  -i notation: force the input to be considered in the given notation,
+               otherwise it's autodetected.
+  -o notation: show the address only in the given notation.
+Valid notations are: 'dot', 'hex', 'bin', 'oct', 'dec'.
+
+
+  nmconv
+  ------
+
+This script show hot to use the convert_nm() function of the iplib module.
+nmconv takes the same arguments and options of the ipconv script (additional
+valid notations are: 'bits', 'wildcard').
+  
+
+  cidrinfo
+  --------
+
+cidrinfo takes only one argument, a 'ip/netmask' CIDR notation, and
+returns some informations about this subnet; e.g.:
+
+$ cidrinfo 127.0.0.1/8
+CIDR: 127.0.0.1/255.0.0.0
+first usable IP address: 127.0.0.1
+last usable IP address: 127.255.255.254
+number of usable IP addresses: 16777214
+network address: 127.0.0.0
+broadcast address: 127.255.255.255
+
+
+  examples (ipconv and nmconv)
+  ----------------------------------
+
+$ ipconv 1.2.3.4
+  notation autodetected as: "dotted decimal"
+Dotted decimal : 1.2.3.4
+Hexdecimal     : 0x1020304
+Octal          : 0100401404
+Binary         : 00000001000000100000001100000100
+Decimal        : 16909060
+
+$ ipconv 0x234234
+  notation autodetected as: "hexadecimal"
+Dotted decimal : 0.35.66.52
+Hexdecimal     : 0x234234
+Octal          : 010641064
+Binary         : 00000000001000110100001000110100
+Decimal        : 2310708
+
+$ ipconv 0234234
+  notation autodetected as: "octal"
+Dotted decimal : 0.1.56.156
+Hexdecimal     : 0x1389C
+Octal          : 0234234
+Binary         : 00000000000000010011100010011100
+Decimal        : 80028
+
+# Force the input to be considered as a decimal.
+$ ipconv -i dec 234
+Dotted decimal : 0.0.0.234
+Hexdecimal     : 0xEA
+Octal          : 0352
+Binary         : 00000000000000000000000011101010
+Decimal        : 234
+
+# Only returns a given notation (hexadecimal in the example).
+$ ipconv -o hex 127.0.0.1
+0x7F000001
+
+
+$ nmconv 16
+  notation autodetected as: "bits"
+dotted decimal:  255.255.0.0
+hexadecimal:  0xFFFF0000
+binary:  11111111111111110000000000000000
+octal:  037777600000
+decimal:  4294901760
+bits:  16
+wildcard bits:  0.0.255.255
+
+$ nmconv 255.0.0.0
+  notation autodetected as: "dotted decimal"
+dotted decimal:  255.0.0.0
+hexadecimal:  0xFF000000
+binary:  11111111000000000000000000000000
+octal:  037700000000
+decimal:  4278190080
+bits:  8
+wildcard bits:  0.255.255.255
+
+$ nmconv 0.0.0.63
+  notation autodetected as: "wildcard bits"
+dotted decimal:  255.255.255.192
+hexadecimal:  0xFFFFFFC0
+binary:  11111111111111111111111111000000
+octal:  037777777700
+decimal:  4294967232
+bits:  26
+wildcard bits:  0.0.0.63
+
+$ nmconv -o dec 0.0.0.63
+4294967232
+
+
