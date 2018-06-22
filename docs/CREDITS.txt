@@ -3,6 +3,8 @@
 
 I want to thank:
 
+- opsdisk for Python 3 support request
+
 - Jeffrey Miller for a bug comparing CIDR addresses for inclusion.
 
 - Nicola Novello, for a patch to support CIDR objects in the

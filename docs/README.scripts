@@ -1,14 +1,10 @@
+# iplib scripts
 
-  iplib scripts
-  -------------
-
-  ipconv
-  ------
+## ipconv
 
 This script show hot to use the IPv4Address class of the iplib module.
 
-Given an IP address, show the IP in various notations.
-Requires one argument: the IP address.
+Given an IP address, show the IP in various notations. Requires one argument: the IP address.
 Options:
   -i notation: force the input to be considered in the given notation,
                otherwise it's autodetected.
@@ -16,19 +12,16 @@ Options:
 Valid notations are: 'dot', 'hex', 'bin', 'oct', 'dec'.
 
 
-  nmconv
-  ------
+## nmconv
 
 This script show hot to use the convert_nm() function of the iplib module.
 nmconv takes the same arguments and options of the ipconv script (additional
 valid notations are: 'bits', 'wildcard').
   
 
-  cidrinfo
-  --------
+## cidrinfo
 
-cidrinfo takes only one argument, a 'ip/netmask' CIDR notation, and
-returns some informations about this subnet; e.g.:
+cidrinfo takes only one argument, a 'ip/netmask' CIDR notation, and returns some informations about this subnet; e.g.:
 
 $ cidrinfo 127.0.0.1/8
 CIDR: 127.0.0.1/255.0.0.0
@@ -39,8 +32,7 @@ network address: 127.0.0.0
 broadcast address: 127.255.255.255
 
 
-  examples (ipconv and nmconv)
-  ----------------------------------
+## examples (ipconv and nmconv)
 
 $ ipconv 1.2.3.4
   notation autodetected as: "dotted decimal"
@@ -111,5 +103,4 @@ wildcard bits:  0.0.0.63
 
 $ nmconv -o dec 0.0.0.63
 4294967232
-
 

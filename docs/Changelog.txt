@@ -1,3 +1,7 @@
+  version 1.2 (22 jun 2018)
+- Python 3 compatibility.
+
+
   version 1.1 (13 feb 2008)
 - fixed a bug comparing CIDRs for inclusion.
 

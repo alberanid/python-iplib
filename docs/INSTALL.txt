@@ -1,22 +1,15 @@
+#  Requirements
 
-  Requirements
-  ------------
-
-* Python version 2.3 or later.
+* Python version 3 or later.
 
 
-  Install
-  -------
+#  Install
 
 Type, as root user:
+
    python ./setup.py install
 
-If it doesn't work, copy the 'iplib.py' module it in your local
-site-packages directory (i.e. /usr/local/lib/python2.4/site-packages/
-or /usr/lib/python2.4/site-packages/ if you're using Python 2.4).
+If it doesn't work, copy the 'iplib.py' module it in your local site-packages directory.
 
-Copy the example scripts 'ipconv', 'nmconv' and 'cidrinfo' from
-the ./bin directory to a directory included in your PATH environment
-variable (/usr/bin/ or /usr/local/bin/).
-
+Copy the example scripts 'ipconv', 'nmconv' and 'cidrinfo' from the ./bin directory to a directory included in your PATH environment variable (/usr/bin/ or /usr/local/bin/).
 
