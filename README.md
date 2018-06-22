@@ -5,8 +5,7 @@ The iplib module contains many functions, classes and constants useful to manage
 You can use this Python module (and the scripts 'ipconv', 'nmconv' and 'cidrinfo') to convert amongst many different notations and to manage couples of address/netmask in the CIDR notation.
 
 iplib was written a long time ago and the code shows its age.
-In June 2018, with the release of version 1.2, it was converted to support Python 3 (without any other refactoring).
-If you need Python 2.x support, please use the 1.1 version.
+In June 2018, with the release of version 1.2, it was converted to support both Python 2 and Python 3 (without any other refactoring).
 
 
 # Functions

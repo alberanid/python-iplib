@@ -607,12 +607,24 @@ class _IPv4Base(object):
     def __eq__(self, other):
         return self._ip_dec == self._cmp_prepare(other)
 
+    def __ne__(self, other):
+        return self._ip_dec != self._cmp_prepare(other)
+
     def __int__(self):
         """Return the decimal representation of the address/netmask."""
         return self._ip_dec
 
     def __index__(self):
         return self._ip_dec
+
+    def __long__(self):
+        return self._ip_dec
+
+    def __oct__(self):
+        return oct(self._ip_dec)
+
+    def __hex__(self):
+        return hex(self._ip_dec)
 
     if not _isnm:
         ip = address = property(get, set, doc='The represented IP.')
@@ -856,6 +868,11 @@ class CIDR(object):
         if not isinstance(other, self.__class__):
             other = self.__class__(other)
         return self._nm == other._nm
+
+    def __ne__(self, other):
+        if not isinstance(other, self.__class__):
+            other = self.__class__(other)
+        return self._nm != other._nm
 
     def __contains__(self, item):
         """Return true if the given address in amongst the usable addresses,

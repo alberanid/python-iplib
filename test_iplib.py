@@ -148,8 +148,8 @@ class TestIPv4Address(unittest.TestCase):
         self.assertTrue(ip.get_bin() == '01111111000000000000000000000001')
         self.assertTrue(ip.get_dec() == '2130706433')
         self.assertTrue(int(ip) == 2130706433)
-        self.assertTrue(ip.get_oct() == '0o17700000001')
-        self.assertTrue(oct(ip) == '0o17700000001')
+        self.assertTrue(ip.get_oct() in ('017700000001', '0o17700000001'))
+        self.assertTrue(oct(ip) in ('017700000001', '0o17700000001'))
 
     def test_ip3(self):
         ip = iplib.IPv4Address('127.0.0.1')
