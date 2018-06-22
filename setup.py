@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
-import sys
-from distutils.core import setup
+import setuptools
 
 
 long_desc = """You can use this Python module to convert amongst many
@@ -10,7 +9,6 @@ in the CIDR notation.
 """
 
 classifiers = """\
-Development Status :: 4 - Beta
 Development Status :: 5 - Production/Stable
 Environment :: Console
 Environment :: No Input/Output (Daemon)
@@ -26,30 +24,24 @@ Topic :: Internet
 Topic :: Utilities
 """
 
-params = {'name': 'iplib',
-    'version': '1.1',
+params = {
+    'name': 'iplib',
+    'version': '1.2',
     'description': 'convert amongst many different IPv4 notations',
     'long_description': long_desc,
     'author': 'Davide Alberani',
     'author_email': 'da@erlug.linux.it',
     'maintainer': 'Davide Alberani',
     'maintainer_email': 'da@erlug.linux.it',
-    'url': 'http://erlug.linux.it/~da/soft/iplib/',
+    'url': 'https://github.com/alberanid/python-iplib',
     'license': 'BSD',
     'py_modules': ['iplib'],
-    'scripts': ['./bin/cidrinfo', './bin/ipconv', './bin/nmconv']}
+    'scripts': ['./bin/cidrinfo', './bin/ipconv', './bin/nmconv'],
+    'keywords': ['ip', 'address', 'quad', 'dot', 'notation',
+                 'binary', 'octal', 'hexadecimal', 'netmask', 'cidr', 'internet'],
+    'platforms': 'any',
+    'download_url': 'http://erlug.linux.it/~da/soft/iplib/',
+    'classifiers': filter(None, classifiers.split("\n"))
+}
 
-
-if sys.version_info >= (2, 1):
-    params['keywords'] = ['ip', 'address', 'quad', 'dot', 'notation',
-                'binary', 'octal', 'hexadecimal', 'netmask', 'cidr', 'internet']
-    params['platforms'] = 'any'
-
-if sys.version_info >= (2, 3):
-    params['download_url'] = 'http://erlug.linux.it/~da/soft/iplib/'
-    params['classifiers'] = filter(None, classifiers.split("\n"))
-
-
-setup(**params)
-
-
+setuptools.setup(**params)
