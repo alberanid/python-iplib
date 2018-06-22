@@ -3,7 +3,7 @@
 # CIDRInfo
 # Shows informations about a CIDR address.
 #
-# Copyright 2001-2010 Davide Alberani <da@erlug.linux.it>
+# Copyright 2001-2018 Davide Alberani <da@erlug.linux.it>
 #
 # This code is released under the BSD license.
 #
@@ -24,7 +24,7 @@ Send bug reports to %s
 
 if len(sys.argv[1:]) != 1:
     sys.stderr.write('Only one argument is required.\n')
-    print HELP
+    print(HELP)
     sys.exit(2)
 
 address = sys.argv[1]
@@ -33,14 +33,14 @@ try:
     cidr = iplib.CIDR(address)
 except ValueError:
     sys.stderr.write('%s: invalid CIDR address.\n' % address)
-    print HELP
+    print(HELP)
     sys.exit(3)
 
-print 'CIDR:', str(cidr)
-print 'first usable IP address:', str(cidr.get_first_ip())
-print 'last usable IP address:', str(cidr.get_last_ip())
-print 'number of usable IP addresses:', str(cidr.get_ip_number())
-print 'network address:', str(cidr.get_network_ip())
-print 'broadcast address:', str(cidr.get_broadcast_ip())
+print('CIDR:' + str(cidr))
+print('first usable IP address:' + str(cidr.get_first_ip()))
+print('last usable IP address:' + str(cidr.get_last_ip()))
+print('number of usable IP addresses:' + str(cidr.get_ip_number()))
+print('network address:' + str(cidr.get_network_ip()))
+print('broadcast address:' + str(cidr.get_broadcast_ip()))
 
 

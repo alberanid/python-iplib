@@ -3,7 +3,7 @@
 # IPConv
 # Convert among ip address notations.
 #
-# Copyright 2001-2010 Davide Alberani <da@erlug.linux.it>
+# Copyright 2001-2018 Davide Alberani <da@erlug.linux.it>
 #
 # This code is released under the BSD license.
 #
@@ -30,12 +30,12 @@ try:
     optlist, args = getopt.getopt(sys.argv[1:],
                         'ho:i:', ['help', 'output=', 'input='])
 except getopt.error:
-    print HELP
+    print(HELP)
     sys.exit(1)
 
 if len(args) != 1:
     sys.stderr.write('Only one argument is required.\n')
-    print HELP
+    print(HELP)
     sys.exit(2)
 
 outp = ''
@@ -43,7 +43,7 @@ inp = ''
 
 for opt in optlist:
     if opt[0] == '-h' or opt[0] == '--help':
-        print HELP
+        print(HELP)
         sys.exit(0)
     elif opt[0] == '-o' or opt[0] == '--output':
         outp = opt[1]
@@ -55,11 +55,11 @@ ip = args[0]
 if not inp:
     inp = iplib.detect(ip)
     if not outp and inp:
-        print '  notation autodetected as: "%s"' % iplib.p_notation(inp)
+        print('  notation autodetected as: "%s"' % iplib.p_notation(inp))
 
 if inp == iplib.IP_UNKNOWN:
     sys.stderr.write('unable to autodetect the notation of "%s"' % ip)
-    print HELP
+    print(HELP)
     sys.exit(4)
 
 try:
@@ -67,28 +67,28 @@ try:
 except ValueError:
     sys.stderr.write('%s address is not in notation %s.\n' %
                         (ip, iplib.p_notation(inp)))
-    print HELP
+    print(HELP)
     sys.exit(4)
 
 if outp == 'dot':
-    print myip.get_dot()
+    print(myip.get_dot())
 elif outp == 'hex':
-    print myip.get_hex()
+    print(myip.get_hex())
 elif outp == 'bin':
-    print myip.get_bin()
+    print(myip.get_bin())
 elif outp == 'dec':
-    print myip.get_dec()
+    print(myip.get_dec())
 elif outp == 'oct':
-    print myip.get_oct()
+    print(myip.get_oct())
 elif not outp:
-    print 'Dotted decimal :', myip.get_dot()
-    print 'Hexdecimal     :', myip.get_hex()
-    print 'Octal          :', myip.get_oct()
-    print 'Binary         :', myip.get_bin()
-    print 'Decimal        :', myip.get_dec()
+    print('Dotted decimal :' + myip.get_dot())
+    print('Hexdecimal     :' + myip.get_hex())
+    print('Octal          :' + myip.get_oct())
+    print('Binary         :' + myip.get_bin())
+    print('Decimal        :' + myip.get_dec())
 else:
     sys.stderr.write('%s: invalid notation.\n' % outp)
-    print HELP
+    print(HELP)
     sys.exit(5)
 
 sys.exit(0)
