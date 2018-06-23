@@ -14,7 +14,7 @@ Environment :: Console
 Environment :: No Input/Output (Daemon)
 Intended Audience :: Developers
 Intended Audience :: End Users/Desktop
-License :: OSI Approved :: BSD
+License :: OSI Approved :: BSD License
 Natural Language :: English
 Operating System :: OS Independent
 Programming Language :: Python
