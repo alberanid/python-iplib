@@ -572,6 +572,11 @@ class _IPv4Base:
     def __ne__(self, other: Any) -> bool:
         return self._ip_dec != self._cmp_prepare(other)
 
+    def __hash__(self) -> int:
+        """Hash consistent with __eq__ (which compares only the decimal value,
+        ignoring subclass), so instances work as dict keys/set members."""
+        return hash(self._ip_dec)
+
     def __int__(self) -> int:
         """Return the decimal representation of the address/netmask."""
         return self._ip_dec
@@ -656,8 +661,20 @@ class CIDR:
 
     The representation of a Classless Inter-Domain Routing (CIDR) address."""
 
+    MAX_LIST_ADDRESSES = 65536
+
     def __init__(self, ip: Any, netmask: Any = None) -> None:
         self.set(ip, netmask)
+
+    def _ensure_iterable_size(self) -> None:
+        """Reject materializing very large address ranges as a list to avoid memory exhaustion."""
+        ip_count = self.get_ip_number()
+        if ip_count > self.MAX_LIST_ADDRESSES:
+            raise ValueError(
+                f"CIDR {self} contains {ip_count} usable addresses; "
+                f"get_all_valid_ip() is limited to {self.MAX_LIST_ADDRESSES}. "
+                "Use iter(cidr) to iterate lazily instead."
+            )
 
     def set(self, ip: Any, netmask: Any = None) -> None:
         """Set the IP address and the netmask."""
@@ -731,7 +748,11 @@ class CIDR:
         return self._ip_num
 
     def get_all_valid_ip(self) -> list[IPv4Address]:
-        """Return a list of IPv4Address objects, one for every usable IP."""
+        """Return a list of IPv4Address objects, one for every usable IP.
+
+        Raises ValueError if the range is too large to materialize as a
+        list in memory; use `iter(cidr)` to lazily iterate instead."""
+        self._ensure_iterable_size()
         return list(self)
 
     def is_valid_ip(self, ip: Any) -> bool:
@@ -802,13 +823,20 @@ class CIDR:
             other = self.__class__(other)
         return self._nm != other._nm
 
+    def __hash__(self) -> int:
+        """Hash consistent with __eq__, which compares only the netmask."""
+        return hash(self._nm)
+
     def __contains__(self, item: Any) -> bool:
         """Return true if the given address in amongst the usable addresses,
         or if the given CIDR is contained in this one."""
         return self.is_valid_ip(item)
 
     def __iter__(self) -> Iterator[IPv4Address]:
-        """Iterate over IPv4Address objects, one for every usable IP."""
+        """Iterate over IPv4Address objects, one for every usable IP.
+
+        This is a lazy generator, so iterating even very large ranges
+        (e.g. 0.0.0.0/0) does not exhaust memory."""
         for i in range(self._ip_num):
             yield IPv4Address(self._first_ip_dec + i, notation=IP_DEC)
 

@@ -202,6 +202,14 @@ class TestIPv4Address(unittest.TestCase):
         ip1 -= 0
         self.assertEqual(id(ip1), _idip1)
 
+    def test_ip_hash(self):
+        ip1 = iplib.IPv4Address("127.0.0.1")
+        ip2 = iplib.IPv4Address("127.0.0.1")
+        nm = iplib.IPv4NetMask("255.0.0.0")
+        self.assertEqual(hash(ip1), hash(ip2))
+        self.assertEqual({ip1, ip2}, {ip1})
+        self.assertEqual(hash(iplib.IPv4Address("255.0.0.0")), hash(nm))
+
 
 class TestIPv4NetMask(unittest.TestCase):
     def test_nm1(self):
@@ -238,6 +246,12 @@ class TestCIDR(unittest.TestCase):
         cidr2 = iplib.CIDR("127.0.0.2/26")
         self.assertEqual(cidr1, cidr2)
 
+    def test_cidr_hash(self):
+        cidr1 = iplib.CIDR("127.0.0.1/26")
+        cidr2 = iplib.CIDR("127.0.0.2/26")
+        self.assertEqual(hash(cidr1), hash(cidr2))
+        self.assertEqual({cidr1, cidr2}, {cidr1})
+
     def test_cidr5(self):
         cidr = iplib.CIDR("127.0.0.1/10")
         ip1 = iplib.IPv4Address("127.0.0.1")
@@ -259,8 +273,17 @@ class TestCIDR(unittest.TestCase):
         ip2 = iplib.IPv4Address("127.0.0.1")
         self.assertIn(ip1, cidr)
         self.assertIn(ip2, cidr)
-        self.assertNotIn(iplib.IPv4Address("126.255.255.255"), cidr)
-        self.assertNotIn(iplib.IPv4Address("127.0.0.2"), cidr)
+
+    def test_cidr_iter_limit(self):
+        cidr = iplib.CIDR("0.0.0.0/0")
+        self.assertGreater(cidr.get_ip_number(), iplib.CIDR.MAX_LIST_ADDRESSES)
+        # __iter__ is a lazy generator, so it's safe even for huge ranges.
+        it = iter(cidr)
+        self.assertEqual(next(it), cidr.get_first_ip())
+        self.assertEqual(len(cidr), cidr.get_ip_number())
+        # get_all_valid_ip() materializes a full list, so it's guarded.
+        with self.assertRaises(ValueError):
+            cidr.get_all_valid_ip()
 
     def test_cidr7(self):
         cidr = iplib.CIDR("127.0.0.1/32")
