@@ -1,11 +1,10 @@
-"""
-iplib module.
+"""iplib module.
 
 The representation of IPv4 addresses and netmasks.
 You can use this module to convert amongst many different notations
 and to manage couples of address/netmask in the CIDR notation.
 
-  Copyright 2001-2018 Davide Alberani <da@erlug.linux.it>
+  Copyright 2001-2026 Davide Alberani <da@mimante.net>
 
 All rights reserved.
 
@@ -32,320 +31,306 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
-__version__ = '1.2.1'
+from __future__ import annotations
+
+from collections.abc import Iterator
+from typing import Any
+
+__version__ = "1.2.2"
 
 
 # Notation types (with an example in the comment).
 # You can use these constants when you have to specify a notation style.
 IP_UNKNOWN = NM_UNKNOWN = 0
-IP_DOT = NM_DOT = 1 # 192.168.0.42
-IP_HEX = NM_HEX = 2 # 0xC0A8002A
-IP_BIN = NM_BIN = 3 # 0o30052000052
-IP_OCT = NM_OCT = 4 # 11000000101010000000000000101010
-IP_DEC = NM_DEC = 5 # 3232235562
-NM_BITS = 6 # 26
-NM_WILDCARD = 7 # 0.0.0.63
+IP_DOT = NM_DOT = 1  # 192.168.0.42
+IP_HEX = NM_HEX = 2  # 0xC0A8002A
+IP_BIN = NM_BIN = 3  # 0o30052000052
+IP_OCT = NM_OCT = 4  # 11000000101010000000000000101010
+IP_DEC = NM_DEC = 5  # 3232235562
+NM_BITS = 6  # 26
+NM_WILDCARD = 7  # 0.0.0.63
 
 # Map notations with one or more strings.
 # You can use these constant strings when you have to specify a notation
 # style, instead of using numeric values.
-NOTATION_MAP = {
-    IP_DOT:         ('dotted decimal', 'dotted', 'quad', 'dot', 'dotted quad'),
-    IP_HEX:         ('hexadecimal', 'hex'),
-    IP_BIN:         ('binary', 'bin'),
-    IP_OCT:         ('octal', 'oct'),
-    IP_DEC:         ('decimal', 'dec'),
-    NM_BITS:        ('bits', 'bit', 'cidr'),
-    NM_WILDCARD:    ('wildcard bits', 'wildcard'),
-    IP_UNKNOWN:     ('unknown', 'unk')
+NOTATION_MAP: dict[int, tuple[str, ...]] = {
+    IP_DOT: ("dotted decimal", "dotted", "quad", "dot", "dotted quad"),
+    IP_HEX: ("hexadecimal", "hex"),
+    IP_BIN: ("binary", "bin"),
+    IP_OCT: ("octal", "oct"),
+    IP_DEC: ("decimal", "dec"),
+    NM_BITS: ("bits", "bit", "cidr"),
+    NM_WILDCARD: ("wildcard bits", "wildcard"),
+    IP_UNKNOWN: ("unknown", "unk"),
 }
-_NOTATION_KEYS = dict([(key, key) for key in list(NOTATION_MAP.keys())])
-for key, values in list(NOTATION_MAP.items()):
+
+_NOTATION_KEYS: dict[int | str, int] = {key: key for key in NOTATION_MAP}
+for key, values in NOTATION_MAP.items():
     for value in values:
         _NOTATION_KEYS[value] = key
 
 
-def _get_notation(notation):
+def _get_notation(notation: Any) -> int | None:
     """Given a numeric value or string value, returns one in IP_DOT, IP_HEX,
     IP_BIN, etc., or None if unable to convert to the internally
     used numeric convention."""
     return _NOTATION_KEYS.get(notation, None)
 
 
-def p_notation(notation):
+def p_notation(notation: Any) -> str:
     """Return a string representing the given notation."""
-    return NOTATION_MAP[_get_notation(notation) or IP_UNKNOWN][0]
+    not_val = _get_notation(notation)
+    key = not_val if not_val is not None else IP_UNKNOWN
+    return NOTATION_MAP[key][0]
 
 
 # This dictionary maps NM_BITS to NM_DEC values.
 # NOTE: /31 is a valid netmask; see RFC3021 (courtesy of Lars Erik Gullerud).
-VALID_NETMASKS = {0: 0, 1: 2147483648, 2: 3221225472, 3: 3758096384,
-                  4: 4026531840, 5: 4160749568, 6: 4227858432,
-                  7: 4261412864, 8: 4278190080, 9: 4286578688,
-                  10: 4290772992, 11: 4292870144, 12: 4293918720,
-                  13: 4294443008, 14: 4294705152, 15: 4294836224,
-                  16: 4294901760, 17: 4294934528, 18: 4294950912,
-                  19: 4294959104, 20: 4294963200, 21: 4294965248,
-                  22: 4294966272, 23: 4294966784, 24: 4294967040,
-                  25: 4294967168, 26: 4294967232, 27: 4294967264,
-                  28: 4294967280, 29: 4294967288, 30: 4294967292,
-                  31: 4294967294, 32: 4294967295}
+VALID_NETMASKS: dict[int, int] = {
+    0: 0,
+    1: 2147483648,
+    2: 3221225472,
+    3: 3758096384,
+    4: 4026531840,
+    5: 4160749568,
+    6: 4227858432,
+    7: 4261412864,
+    8: 4278190080,
+    9: 4286578688,
+    10: 4290772992,
+    11: 4292870144,
+    12: 4293918720,
+    13: 4294443008,
+    14: 4294705152,
+    15: 4294836224,
+    16: 4294901760,
+    17: 4294934528,
+    18: 4294950912,
+    19: 4294959104,
+    20: 4294963200,
+    21: 4294965248,
+    22: 4294966272,
+    23: 4294966784,
+    24: 4294967040,
+    25: 4294967168,
+    26: 4294967232,
+    27: 4294967264,
+    28: 4294967280,
+    29: 4294967288,
+    30: 4294967292,
+    31: 4294967294,
+    32: 4294967295,
+}
 _NETMASKS_VALUES = list(VALID_NETMASKS.values())
-_NETMASKS_INV = dict([(value, key) for key, value in list(VALID_NETMASKS.items())])
+_NETMASKS_INV = {value: key for key, value in VALID_NETMASKS.items()}
 
 
 # - Functions used to check if an address or a netmask is in a given notation.
 
-def is_dot(ip):
+
+def is_dot(ip: Any) -> bool:
     """Return true if the IP address is in dotted decimal notation."""
-    octets = str(ip).split('.')
+    octets = str(ip).split(".")
     if len(octets) != 4:
         return False
-    for i in octets:
+    for octet in octets:
         try:
-            val = int(i)
+            val = int(octet)
         except ValueError:
             return False
-        if val > 255 or val < 0:
+        if not (0 <= val <= 255):
             return False
     return True
 
 
-def is_hex(ip):
+def is_hex(ip: Any) -> bool:
     """Return true if the IP address is in hexadecimal notation."""
     try:
         dec = int(str(ip), 16)
     except (TypeError, ValueError):
         return False
-    if dec > 0xFFFFFFFF or dec < 0:
-        return False
-    return True
+    return 0 <= dec <= 0xFFFFFFFF
 
 
-def is_bin(ip):
+def is_bin(ip: Any) -> bool:
     """Return true if the IP address is in binary notation."""
     try:
-        ip = str(ip)
-        if len(ip) != 32:
+        s = str(ip)
+        if len(s) != 32:
             return False
-        dec = int(ip, 2)
+        dec = int(s, 2)
     except (TypeError, ValueError):
         return False
-    if dec > 4294967295 or dec < 0:
-        return False
-    return True
+    return 0 <= dec <= 4294967295
 
 
-def is_oct(ip):
+def is_oct(ip: Any) -> bool:
     """Return true if the IP address is in octal notation."""
     try:
         dec = int(str(ip), 8)
     except (TypeError, ValueError):
         return False
-    if dec > 0o37777777777 or dec < 0:
-        return False
-    return True
+    return 0 <= dec <= 0o37777777777
 
 
-def is_dec(ip):
+def is_dec(ip: Any) -> bool:
     """Return true if the IP address is in decimal notation."""
     try:
         dec = int(str(ip))
-    except ValueError:
+    except (TypeError, ValueError):
         return False
-    if dec > 4294967295 or dec < 0:
-        return False
-    return True
+    return 0 <= dec <= 4294967295
 
 
-def _check_nm(nm, notation):
+def _check_nm(nm: Any, notation: int) -> bool:
     """Function internally used to check if the given netmask
     is of the specified notation."""
-    # Convert to decimal, and check if it's in the list of valid netmasks.
     _NM_CHECK_FUNCT = {
         NM_DOT: _dot_to_dec,
         NM_HEX: _hex_to_dec,
         NM_BIN: _bin_to_dec,
         NM_OCT: _oct_to_dec,
-        NM_DEC: _dec_to_dec_long}
+        NM_DEC: _dec_to_dec_long,
+    }
     try:
         dec = _NM_CHECK_FUNCT[notation](nm, check=True)
-    except ValueError:
+    except (ValueError, KeyError):
         return False
-    if dec in _NETMASKS_VALUES:
-        return True
-    return False
+    return dec in _NETMASKS_VALUES
 
 
-def is_dot_nm(nm):
-    """Return true if the netmask is in dotted decimal notatation."""
+def is_dot_nm(nm: Any) -> bool:
+    """Return true if the netmask is in dotted decimal notation."""
     return _check_nm(nm, NM_DOT)
 
 
-def is_hex_nm(nm):
-    """Return true if the netmask is in hexadecimal notatation."""
+def is_hex_nm(nm: Any) -> bool:
+    """Return true if the netmask is in hexadecimal notation."""
     return _check_nm(nm, NM_HEX)
 
 
-def is_bin_nm(nm):
-    """Return true if the netmask is in binary notatation."""
+def is_bin_nm(nm: Any) -> bool:
+    """Return true if the netmask is in binary notation."""
     return _check_nm(nm, NM_BIN)
 
 
-def is_oct_nm(nm):
-    """Return true if the netmask is in octal notatation."""
+def is_oct_nm(nm: Any) -> bool:
+    """Return true if the netmask is in octal notation."""
     return _check_nm(nm, NM_OCT)
 
 
-def is_dec_nm(nm):
-    """Return true if the netmask is in decimal notatation."""
+def is_dec_nm(nm: Any) -> bool:
+    """Return true if the netmask is in decimal notation."""
     return _check_nm(nm, NM_DEC)
 
 
-def is_bits_nm(nm):
-    """Return true if the netmask is in bits notatation."""
+def is_bits_nm(nm: Any) -> bool:
+    """Return true if the netmask is in bits notation."""
     try:
         bits = int(str(nm))
-    except ValueError:
+    except (TypeError, ValueError):
         return False
-    if bits > 32 or bits < 0:
-        return False
-    return True
+    return 0 <= bits <= 32
 
 
-def is_wildcard_nm(nm):
-    """Return true if the netmask is in wildcard bits notatation."""
+def is_wildcard_nm(nm: Any) -> bool:
+    """Return true if the netmask is in wildcard bits notation."""
     try:
         dec = 0xFFFFFFFF - _dot_to_dec(nm, check=True)
     except ValueError:
         return False
-    if dec in _NETMASKS_VALUES:
-        return True
-    return False
+    return dec in _NETMASKS_VALUES
 
 
-# - Functions used to convert various notation to/from decimal notation.
+# - Functions used to convert various notations to/from decimal notation.
 
-def _dot_to_dec(ip, check=True):
+
+def _dot_to_dec(ip: Any, check: bool = True) -> int:
     """Dotted decimal notation to decimal conversion."""
     if check and not is_dot(ip):
-        raise ValueError('_dot_to_dec: invalid IP: "%s"' % ip)
-    octets = str(ip).split('.')
-    dec = 0
-    dec |= int(octets[0]) << 24
-    dec |= int(octets[1]) << 16
-    dec |= int(octets[2]) << 8
-    dec |= int(octets[3])
-    return dec
+        raise ValueError(f'_dot_to_dec: invalid IP: "{ip}"')
+    octets = str(ip).split(".")
+    return (int(octets[0]) << 24) | (int(octets[1]) << 16) | (int(octets[2]) << 8) | int(octets[3])
 
 
-def _dec_to_dot(ip):
+def _dec_to_dot(ip: int) -> str:
     """Decimal to dotted decimal notation conversion."""
-    first = int((ip >> 24) & 255)
-    second = int((ip >> 16) & 255)
-    third = int((ip >> 8) & 255)
-    fourth = int(ip & 255)
-    return '%d.%d.%d.%d' % (first, second, third, fourth)
+    return f"{(ip >> 24) & 255}.{(ip >> 16) & 255}.{(ip >> 8) & 255}.{ip & 255}"
 
 
-def _hex_to_dec(ip, check=True):
+def _hex_to_dec(ip: Any, check: bool = True) -> int:
     """Hexadecimal to decimal conversion."""
     if check and not is_hex(ip):
-        raise ValueError('_hex_to_dec: invalid IP: "%s"' % ip)
+        raise ValueError(f'_hex_to_dec: invalid IP: "{ip}"')
     if isinstance(ip, int):
         ip = hex(ip)
     return int(str(ip), 16)
 
 
-def _dec_to_hex(ip):
+def _dec_to_hex(ip: int) -> str:
     """Decimal to hexadecimal conversion."""
     return hex(ip)
 
 
-def _oct_to_dec(ip, check=True):
+def _oct_to_dec(ip: Any, check: bool = True) -> int:
     """Octal to decimal conversion."""
     if check and not is_oct(ip):
-        raise ValueError('_oct_to_dec: invalid IP: "%s"' % ip)
+        raise ValueError(f'_oct_to_dec: invalid IP: "{ip}"')
     if isinstance(ip, int):
         ip = oct(ip)
     return int(str(ip), 8)
 
 
-def _dec_to_oct(ip):
+def _dec_to_oct(ip: int) -> str:
     """Decimal to octal conversion."""
     return oct(ip)
 
 
-def _bin_to_dec(ip, check=True):
+def _bin_to_dec(ip: Any, check: bool = True) -> int:
     """Binary to decimal conversion."""
     if check and not is_bin(ip):
-        raise ValueError('_bin_to_dec: invalid IP: "%s"' % ip)
-    if isinstance(ip, int):
-        ip = str(ip)
+        raise ValueError(f'_bin_to_dec: invalid IP: "{ip}"')
     return int(str(ip), 2)
 
 
-def _BYTES_TO_BITS():
-    """Generate a table to convert a whole byte to binary.
-    This code was taken from the Python Cookbook, 2nd edition - O'Reilly."""
-    the_table = 256*[None]
-    bits_per_byte = list(range(7, -1, -1))
-    for n in range(256):
-        l = n
-        bits = 8*[None]
-        for i in bits_per_byte:
-            bits[i] = '01'[n & 1]
-            n >>= 1
-        the_table[l] = ''.join(bits)
-    return the_table
-
-
-_BYTES_TO_BITS = _BYTES_TO_BITS()
-
-
-def _dec_to_bin(ip):
+def _dec_to_bin(ip: int) -> str:
     """Decimal to binary conversion."""
-    bits = []
-    while ip:
-        bits.append(_BYTES_TO_BITS[ip & 255])
-        ip >>= 8
-    bits.reverse()
-    return ''.join(bits) or 32*'0'
+    return f"{ip:032b}"
 
 
-def _dec_to_dec_long(ip, check=True):
+def _dec_to_dec_long(ip: Any, check: bool = True) -> int:
     """Decimal to decimal (long) conversion."""
     if check and not is_dec(ip):
-        raise ValueError('_dec_to_dec: invalid IP: "%s"' % ip)
+        raise ValueError(f'_dec_to_dec: invalid IP: "{ip}"')
     return int(str(ip))
 
 
-def _dec_to_dec_str(ip):
+def _dec_to_dec_str(ip: int) -> str:
     """Decimal to decimal (string) conversion."""
     return str(ip)
 
 
-def _bits_to_dec(nm, check=True):
+def _bits_to_dec(nm: Any, check: bool = True) -> int:
     """Bits to decimal conversion."""
     if check and not is_bits_nm(nm):
-        raise ValueError('_bits_to_dec: invalid netmask: "%s"' % nm)
+        raise ValueError(f'_bits_to_dec: invalid netmask: "{nm}"')
     bits = int(str(nm))
     return VALID_NETMASKS[bits]
 
 
-def _dec_to_bits(nm):
+def _dec_to_bits(nm: int) -> str:
     """Decimal to bits conversion."""
     return str(_NETMASKS_INV[nm])
 
 
-def _wildcard_to_dec(nm, check=False):
+def _wildcard_to_dec(nm: Any, check: bool = False) -> int:
     """Wildcard bits to decimal conversion."""
     if check and not is_wildcard_nm(nm):
-        raise ValueError('_wildcard_to_dec: invalid netmask: "%s"' % nm)
+        raise ValueError(f'_wildcard_to_dec: invalid netmask: "{nm}"')
     return 0xFFFFFFFF - _dot_to_dec(nm, check=False)
 
 
-def _dec_to_wildcard(nm):
+def _dec_to_wildcard(nm: int) -> str:
     """Decimal to wildcard bits conversion."""
     return _dec_to_dot(0xFFFFFFFF - nm)
 
@@ -358,536 +343,478 @@ _CHECK_FUNCT = {
     IP_BIN: (is_bin, is_bin_nm),
     IP_OCT: (is_oct, is_oct_nm),
     IP_DEC: (is_dec, is_dec_nm),
-    NM_BITS: (lambda: False, is_bits_nm),
-    NM_WILDCARD: (lambda: False, is_wildcard_nm)
+    NM_BITS: (lambda ip: False, is_bits_nm),
+    NM_WILDCARD: (lambda ip: False, is_wildcard_nm),
 }
-_CHECK_FUNCT_KEYS = list(_CHECK_FUNCT.keys())
 
 
-def _is_notation(ip, notation, _isnm):
+def _is_notation(ip: Any, notation: Any, _isnm: bool) -> bool:
     """Internally used to check if an IP/netmask is in the given notation."""
     notation_orig = notation
-    notation = _get_notation(notation)
-    if notation not in _CHECK_FUNCT_KEYS:
-        raise ValueError('_is_notation: unkown notation: "%s"' % notation_orig)
-    return _CHECK_FUNCT[notation][_isnm](ip)
+    notation_key = _get_notation(notation)
+    if notation_key not in _CHECK_FUNCT:
+        raise ValueError(f'_is_notation: unknown notation: "{notation_orig}"')
+    return _CHECK_FUNCT[notation_key][_isnm](ip)
 
 
-def is_notation(ip, notation):
+def is_notation(ip: Any, notation: Any) -> bool:
     """Return true if the given address is in the given notation."""
     return _is_notation(ip, notation, _isnm=False)
 
 
-def is_notation_nm(nm, notation):
+def is_notation_nm(nm: Any, notation: Any) -> bool:
     """Return true if the given netmask is in the given notation."""
     return _is_notation(nm, notation, _isnm=True)
 
 
-def _detect(ip, _isnm):
+def _detect(ip: Any, _isnm: bool) -> int:
     """Function internally used to detect the notation of the
     given IP or netmask."""
-    ip = str(ip)
-    if len(ip) > 1:
-        if ip[0:2] == '0x':
-            if _CHECK_FUNCT[IP_HEX][_isnm](ip):
+    ip_str = str(ip)
+    if len(ip_str) > 1:
+        if ip_str.startswith("0x"):
+            if _CHECK_FUNCT[IP_HEX][_isnm](ip_str):
                 return IP_HEX
-        elif ip[0] == '0':
-            if _CHECK_FUNCT[IP_OCT][_isnm](ip):
+        elif ip_str.startswith("0"):
+            if _CHECK_FUNCT[IP_OCT][_isnm](ip_str):
                 return IP_OCT
-    if _CHECK_FUNCT[IP_DOT][_isnm](ip):
+    if _CHECK_FUNCT[IP_DOT][_isnm](ip_str):
         return IP_DOT
-    elif _isnm and _CHECK_FUNCT[NM_BITS][_isnm](ip):
+    if _isnm and _CHECK_FUNCT[NM_BITS][_isnm](ip_str):
         return NM_BITS
-    elif _CHECK_FUNCT[IP_DEC][_isnm](ip):
+    if _CHECK_FUNCT[IP_DEC][_isnm](ip_str):
         return IP_DEC
-    elif _isnm and _CHECK_FUNCT[NM_WILDCARD][_isnm](ip):
+    if _isnm and _CHECK_FUNCT[NM_WILDCARD][_isnm](ip_str):
         return NM_WILDCARD
-    elif _CHECK_FUNCT[IP_BIN][_isnm](ip):
+    if _CHECK_FUNCT[IP_BIN][_isnm](ip_str):
         return IP_BIN
     return IP_UNKNOWN
 
 
-def detect(ip):
-    """Detect the notation of an IP address.
-
-    @param ip: the IP address.
-    @type ip: integers, strings or object with an appropriate __str()__ method.
-    @return: one of the IP_* constants; IP_UNKNOWN if undetected."""
+def detect(ip: Any) -> int:
+    """Detect the notation of an IP address."""
     return _detect(ip, _isnm=False)
 
 
-def detect_nm(nm):
-    """Detect the notation of a netmask.
-    @param nm: the netmask.
-    @type nm: integers, strings or object with an appropriate __str()__ method.
-    @return: one of the NM_* constants; NM_UNKNOWN if undetected."""
+def detect_nm(nm: Any) -> int:
+    """Detect the notation of a netmask."""
     return _detect(nm, _isnm=True)
 
 
-def p_detect(ip):
+def p_detect(ip: Any) -> str:
     """Return the notation of an IP address (string)."""
     return NOTATION_MAP[detect(ip)][0]
 
 
-def p_detect_nm(nm):
+def p_detect_nm(nm: Any) -> str:
     """Return the notation of a netmask (string)."""
     return NOTATION_MAP[detect_nm(nm)][0]
 
 
-def _convert(ip, notation, inotation, _check, _isnm):
+def _convert(
+    ip: Any, notation: Any, inotation: Any, _check: bool | None, _isnm: bool
+) -> str | int:
     """Internally used to convert IPs and netmasks to other notations."""
     inotation_orig = inotation
     notation_orig = notation
-    inotation = _get_notation(inotation)
-    notation = _get_notation(notation)
-    if inotation is None:
-        raise ValueError('_convert: unknown input notation: "%s"' % inotation_orig)
-    if notation is None:
-        raise ValueError('_convert: unknown output notation: "%s"' % notation_orig)
-    docheck = _check or False
-    if inotation == IP_UNKNOWN:
-        inotation = _detect(ip, _isnm)
-        if inotation == IP_UNKNOWN:
-            raise ValueError('_convert: unable to guess input notation or invalid value')
+    inotation_key = _get_notation(inotation)
+    notation_key = _get_notation(notation)
+
+    if inotation_key is None:
+        raise ValueError(f'_convert: unknown input notation: "{inotation_orig}"')
+    if notation_key is None:
+        raise ValueError(f'_convert: unknown output notation: "{notation_orig}"')
+
+    docheck = _check if _check is not None else False
+    if inotation_key == IP_UNKNOWN:
+        inotation_key = _detect(ip, _isnm)
+        if inotation_key == IP_UNKNOWN:
+            raise ValueError("_convert: unable to guess input notation or invalid value")
         if _check is None:
             docheck = True
-    # We _always_ check this case later.
+
     if _isnm:
         docheck = False
-    dec = 0
-    if inotation == IP_DOT:
+
+    if inotation_key == IP_DOT:
         dec = _dot_to_dec(ip, docheck)
-    elif inotation == IP_HEX:
+    elif inotation_key == IP_HEX:
         dec = _hex_to_dec(ip, docheck)
-    elif inotation == IP_BIN:
+    elif inotation_key == IP_BIN:
         dec = _bin_to_dec(ip, docheck)
-    elif inotation == IP_OCT:
+    elif inotation_key == IP_OCT:
         dec = _oct_to_dec(ip, docheck)
-    elif inotation == IP_DEC:
+    elif inotation_key == IP_DEC:
         dec = _dec_to_dec_long(ip, docheck)
-    elif _isnm and inotation == NM_BITS:
+    elif _isnm and inotation_key == NM_BITS:
         dec = _bits_to_dec(ip, docheck)
-    elif _isnm and inotation == NM_WILDCARD:
+    elif _isnm and inotation_key == NM_WILDCARD:
         dec = _wildcard_to_dec(ip, docheck)
     else:
-        raise ValueError('_convert: unknown IP/netmask notation: "%s"' % inotation_orig)
-    # Ensure this is a valid netmask.
+        raise ValueError(f'_convert: unknown IP/netmask notation: "{inotation_orig}"')
+
     if _isnm and dec not in _NETMASKS_VALUES:
-        raise ValueError('_convert: invalid netmask: "%s"' % ip)
-    if notation == IP_DOT:
+        raise ValueError(f'_convert: invalid netmask: "{ip}"')
+
+    if notation_key == IP_DOT:
         return _dec_to_dot(dec)
-    elif notation == IP_HEX:
+    if notation_key == IP_HEX:
         return _dec_to_hex(dec)
-    elif notation == IP_BIN:
+    if notation_key == IP_BIN:
         return _dec_to_bin(dec)
-    elif notation == IP_OCT:
+    if notation_key == IP_OCT:
         return _dec_to_oct(dec)
-    elif notation == IP_DEC:
+    if notation_key == IP_DEC:
         return _dec_to_dec_str(dec)
-    elif _isnm and notation == NM_BITS:
+    if _isnm and notation_key == NM_BITS:
         return _dec_to_bits(dec)
-    elif _isnm and notation == NM_WILDCARD:
+    if _isnm and notation_key == NM_WILDCARD:
         return _dec_to_wildcard(dec)
-    else:
-        raise ValueError('convert: unknown notation: "%s"' % notation_orig)
+    raise ValueError(f'convert: unknown notation: "{notation_orig}"')
 
 
-def convert(ip, notation=IP_DOT, inotation=IP_UNKNOWN, check=True):
-    """Convert among IP address notations.
-
-    Given an IP address, this function returns the address
-    in another notation.
-
-    @param ip: the IP address.
-    @type ip: integers, strings or object with an appropriate __str()__ method.
-
-    @param notation: the notation of the output (default: IP_DOT).
-    @type notation: one of the IP_* constants, or the equivalent strings.
-
-    @param inotation: force the input to be considered in the given notation
-                    (default the notation of the input is autodetected).
-    @type inotation: one of the IP_* constants, or the equivalent strings.
-
-    @param check: force the notation check on the input.
-    @type check: True force the check, False force not to check and None
-                do the check only if the inotation is unknown.
-
-    @return: a string representing the IP in the selected notation.
-
-    @raise ValueError: raised when the input is in unknown notation."""
+def convert(
+    ip: Any, notation: Any = IP_DOT, inotation: Any = IP_UNKNOWN, check: bool | None = True
+) -> str | int:
+    """Convert among IP address notations."""
     return _convert(ip, notation, inotation, _check=check, _isnm=False)
 
 
-def convert_nm(nm, notation=IP_DOT, inotation=IP_UNKNOWN, check=True):
+def convert_nm(
+    nm: Any, notation: Any = IP_DOT, inotation: Any = IP_UNKNOWN, check: bool | None = True
+) -> str | int:
     """Convert a netmask to another notation."""
     return _convert(nm, notation, inotation, _check=check, _isnm=True)
 
 
 # - Classes used to manage IP addresses, netmasks and the CIDR notation.
 
-class _IPv4Base(object):
-    """Base class for IP addresses and netmasks."""
-    _isnm = False # Set to True when representing a netmask.
 
-    def __init__(self, ip, notation=IP_UNKNOWN):
+class _IPv4Base:
+    """Base class for IP addresses and netmasks."""
+
+    _isnm = False  # Set to True when representing a netmask.
+
+    def __init__(self, ip: Any, notation: Any = IP_UNKNOWN) -> None:
         """Initialize the object."""
         self.set(ip, notation)
 
-    def set(self, ip, notation=IP_UNKNOWN):
+    def set(self, ip: Any, notation: Any = IP_UNKNOWN) -> None:
         """Set the IP address/netmask."""
-        self._ip_dec = int(_convert(ip, notation=IP_DEC, inotation=notation,
-                                    _check=True, _isnm=self._isnm))
-        self._ip = _convert(self._ip_dec, notation=IP_DOT, inotation=IP_DEC,
-                            _check=False, _isnm=self._isnm)
+        self._ip_dec = int(
+            _convert(ip, notation=IP_DEC, inotation=notation, _check=True, _isnm=self._isnm)
+        )
+        self._ip = str(
+            _convert(self._ip_dec, notation=IP_DOT, inotation=IP_DEC, _check=False, _isnm=self._isnm)
+        )
 
-    def get(self):
+    def get(self) -> str:
         """Return the address/netmask."""
         return self.get_dot()
 
-    def get_dot(self):
+    def get_dot(self) -> str:
         """Return the dotted decimal notation of the address/netmask."""
         return self._ip
 
-    def get_hex(self):
+    def get_hex(self) -> str:
         """Return the hexadecimal notation of the address/netmask."""
-        return _convert(self._ip_dec, notation=IP_HEX,
-                        inotation=IP_DEC, _check=False, _isnm=self._isnm)
+        return str(
+            _convert(self._ip_dec, notation=IP_HEX, inotation=IP_DEC, _check=False, _isnm=self._isnm)
+        )
 
-    def get_bin(self):
+    def get_bin(self) -> str:
         """Return the binary notation of the address/netmask."""
-        return _convert(self._ip_dec, notation=IP_BIN,
-                        inotation=IP_DEC, _check=False, _isnm=self._isnm)
+        return str(
+            _convert(self._ip_dec, notation=IP_BIN, inotation=IP_DEC, _check=False, _isnm=self._isnm)
+        )
 
-    def get_dec(self):
+    def get_dec(self) -> str:
         """Return the decimal notation of the address/netmask."""
         return str(self._ip_dec)
 
-    def get_oct(self):
+    def get_oct(self) -> str:
         """Return the octal notation of the address/netmask."""
-        return _convert(self._ip_dec, notation=IP_OCT,
-                        inotation=IP_DEC, _check=False, _isnm=self._isnm)
+        return str(
+            _convert(self._ip_dec, notation=IP_OCT, inotation=IP_DEC, _check=False, _isnm=self._isnm)
+        )
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Print this address/netmask."""
         return self.get()
 
-    def _cmp_prepare(self, other):
+    def _cmp_prepare(self, other: Any) -> int:
         """Prepare the item to be compared with this address/netmask."""
         if isinstance(other, self.__class__):
             return other._ip_dec
-        elif isinstance(other, int):
-            # NOTE: this hides the fact that "other" can be a non valid IP/nm.
+        if isinstance(other, int):
             return other
         return self.__class__(other)._ip_dec
 
-    def __lt__(self, other):
+    def __lt__(self, other: Any) -> bool:
         ret = self._ip_dec < self._cmp_prepare(other)
-        if self._isnm:
-            return not ret
-        return ret
+        return not ret if self._isnm else ret
 
-    def __le__(self, other):
+    def __le__(self, other: Any) -> bool:
         ret = self._ip_dec <= self._cmp_prepare(other)
-        if self._isnm:
-            return not ret
-        return ret
+        return not ret if self._isnm else ret
 
-    def __gt__(self, other):
+    def __gt__(self, other: Any) -> bool:
         ret = self._ip_dec > self._cmp_prepare(other)
-        if self._isnm:
-            return not ret
-        return ret
+        return not ret if self._isnm else ret
 
-    def __ge__(self, other):
+    def __ge__(self, other: Any) -> bool:
         ret = self._ip_dec >= self._cmp_prepare(other)
-        if self._isnm:
-            return not ret
-        return ret
+        return not ret if self._isnm else ret
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         return self._ip_dec == self._cmp_prepare(other)
 
-    def __ne__(self, other):
+    def __ne__(self, other: Any) -> bool:
         return self._ip_dec != self._cmp_prepare(other)
 
-    def __int__(self):
+    def __int__(self) -> int:
         """Return the decimal representation of the address/netmask."""
         return self._ip_dec
 
-    def __index__(self):
+    def __index__(self) -> int:
         return self._ip_dec
-
-    def __long__(self):
-        return self._ip_dec
-
-    def __oct__(self):
-        return oct(self._ip_dec)
-
-    def __hex__(self):
-        return hex(self._ip_dec)
-
-    if not _isnm:
-        ip = address = property(get, set, doc='The represented IP.')
-    else:
-        nm = netmask = property(get, set, doc='The represented netmask.')
 
 
 class IPv4Address(_IPv4Base):
-    """An IPv4 Internet address.
+    """An IPv4 Internet address."""
 
-    This class represents an IPv4 Internet address."""
+    ip = address = property(_IPv4Base.get, _IPv4Base.set, doc="The represented IP.")
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """The representation string for this address."""
-        return '<IPv4 address %s>' % self.get()
+        return f"<IPv4 address {self.get()}>"
 
-    def _add(self, other):
+    def _add(self, other: Any) -> int:
         """Sum two IP addresses."""
         if isinstance(other, self.__class__):
-            sum_ = self._ip_dec + other._ip_dec
-        elif isinstance(other, int):
-            sum_ = self._ip_dec + other
-        else:
-            other = self.__class__(other)
-            sum_ = self._ip_dec + other._ip_dec
-        return sum_
+            return self._ip_dec + other._ip_dec
+        if isinstance(other, int):
+            return self._ip_dec + other
+        return self._ip_dec + self.__class__(other)._ip_dec
 
-    def __add__(self, other):
+    def __add__(self, other: Any) -> IPv4Address:
         """Sum two IP addresses."""
         return IPv4Address(self._add(other), notation=IP_DEC)
 
     __radd__ = __add__
 
-    def __iadd__(self, other):
+    def __iadd__(self, other: Any) -> IPv4Address:
         """Augmented arithmetic sum."""
         self.set(self._add(other), notation=IP_DEC)
         return self
 
-    def _sub(self, other):
+    def _sub(self, other: Any) -> int:
         """Subtract two IP addresses."""
         if isinstance(other, self.__class__):
-            sub = self._ip_dec - other._ip_dec
+            return self._ip_dec - other._ip_dec
         if isinstance(other, int):
-            sub = self._ip_dec - other
-        else:
-            other = self.__class__(other)
-            sub = self._ip_dec - other._ip_dec
-        return sub
+            return self._ip_dec - other
+        return self._ip_dec - self.__class__(other)._ip_dec
 
-    def __sub__(self, other):
+    def __sub__(self, other: Any) -> IPv4Address:
         """Subtract two IP addresses."""
         return IPv4Address(self._sub(other), notation=IP_DEC)
 
     __rsub__ = __sub__
 
-    def __isub__(self, other):
+    def __isub__(self, other: Any) -> IPv4Address:
         """Augmented arithmetic subtraction."""
         self.set(self._sub(other), notation=IP_DEC)
         return self
 
 
 class IPv4NetMask(_IPv4Base):
-    """An IPv4 Internet netmask.
+    """An IPv4 Internet netmask."""
 
-    This class represents an IPv4 Internet netmask."""
     _isnm = True
+    nm = netmask = property(_IPv4Base.get, _IPv4Base.set, doc="The represented netmask.")
 
-    def get_bits(self):
+    def get_bits(self) -> str:
         """Return the bits notation of the netmask."""
-        return _convert(self._ip, notation=NM_BITS,
-                        inotation=IP_DOT, _check=False, _isnm=self._isnm)
+        return str(
+            _convert(self._ip, notation=NM_BITS, inotation=IP_DOT, _check=False, _isnm=self._isnm)
+        )
 
-    def get_wildcard(self):
+    def get_wildcard(self) -> str:
         """Return the wildcard bits notation of the netmask."""
-        return _convert(self._ip, notation=NM_WILDCARD,
-                        inotation=IP_DOT, _check=False, _isnm=self._isnm)
+        return str(
+            _convert(self._ip, notation=NM_WILDCARD, inotation=IP_DOT, _check=False, _isnm=self._isnm)
+        )
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """The representation string for this netmask."""
-        return '<IPv4 netmask %s>' % self.get()
+        return f"<IPv4 netmask {self.get()}>"
 
 
-class CIDR(object):
+class CIDR:
     """A CIDR address.
 
     The representation of a Classless Inter-Domain Routing (CIDR) address."""
-    def __init__(self, ip, netmask=None):
+
+    def __init__(self, ip: Any, netmask: Any = None) -> None:
         self.set(ip, netmask)
 
-    def set(self, ip, netmask=None):
+    def set(self, ip: Any, netmask: Any = None) -> None:
         """Set the IP address and the netmask."""
         if isinstance(ip, str) and netmask is None:
-            ipnm = ip.split('/')
+            ipnm = ip.split("/")
             if len(ipnm) != 2:
-                raise ValueError('set: invalid CIDR: "%s"' % ip)
-            ip = ipnm[0]
-            netmask = ipnm[1]
-        if isinstance(ip, IPv4Address):
-            self._ip = ip
-        else:
-            self._ip = IPv4Address(ip)
-        if isinstance(netmask, IPv4NetMask):
-            self._nm = netmask
-        else:
-            self._nm = IPv4NetMask(netmask)
+                raise ValueError(f'set: invalid CIDR: "{ip}"')
+            ip, netmask = ipnm[0], ipnm[1]
+        self._ip = ip if isinstance(ip, IPv4Address) else IPv4Address(ip)
+        self._nm = netmask if isinstance(netmask, IPv4NetMask) else IPv4NetMask(netmask)
+
         ipl = int(self._ip)
         nml = int(self._nm)
         base_add = ipl & nml
         self._ip_num = 0xFFFFFFFF - 1 - nml
-        # NOTE: quite a mess.
-        #      This's here to handle /32 (-1) and /31 (0) netmasks.
+
         if self._ip_num in (-1, 0):
-            if self._ip_num == -1:
-                self._ip_num = 1
-            else:
-                self._ip_num = 2
+            self._ip_num = 1 if self._ip_num == -1 else 2
             self._net_ip = None
             self._bc_ip = None
             self._first_ip_dec = base_add
             self._first_ip = IPv4Address(self._first_ip_dec, notation=IP_DEC)
-            if self._ip_num == 1:
-                last_ip_dec = self._first_ip_dec
-            else:
-                last_ip_dec = self._first_ip_dec + 1
+            last_ip_dec = self._first_ip_dec if self._ip_num == 1 else self._first_ip_dec + 1
             self._last_ip = IPv4Address(last_ip_dec, notation=IP_DEC)
             return
+
         self._net_ip = IPv4Address(base_add, notation=IP_DEC)
         self._bc_ip = IPv4Address(base_add + self._ip_num + 1, notation=IP_DEC)
         self._first_ip_dec = base_add + 1
         self._first_ip = IPv4Address(self._first_ip_dec, notation=IP_DEC)
         self._last_ip = IPv4Address(base_add + self._ip_num, notation=IP_DEC)
 
-    def get(self):
+    def get(self) -> str:
         """Print this CIDR address."""
-        return '%s/%s' % (str(self._ip), str(self._nm))
+        return f"{self._ip}/{self._nm}"
 
-    def set_ip(self, ip):
+    def set_ip(self, ip: Any) -> None:
         """Change the current IP."""
         self.set(ip=ip, netmask=self._nm)
 
-    def get_ip(self):
+    def get_ip(self) -> IPv4Address:
         """Return the given address."""
         return self._ip
 
-    def set_netmask(self, netmask):
+    def set_netmask(self, netmask: Any) -> None:
         """Change the current netmask."""
         self.set(ip=self._ip, netmask=netmask)
 
-    def get_netmask(self):
+    def get_netmask(self) -> IPv4NetMask:
         """Return the netmask."""
         return self._nm
 
-    def get_first_ip(self):
+    def get_first_ip(self) -> IPv4Address:
         """Return the first usable IP address."""
         return self._first_ip
 
-    def get_last_ip(self):
+    def get_last_ip(self) -> IPv4Address:
         """Return the last usable IP address."""
         return self._last_ip
 
-    def get_network_ip(self):
+    def get_network_ip(self) -> IPv4Address | None:
         """Return the network address."""
         return self._net_ip
 
-    def get_broadcast_ip(self):
+    def get_broadcast_ip(self) -> IPv4Address | None:
         """Return the broadcast address."""
         return self._bc_ip
 
-    def get_ip_number(self):
+    def get_ip_number(self) -> int:
         """Return the number of usable IP addresses."""
         return self._ip_num
 
-    def get_all_valid_ip(self):
-        """Return a list of IPv4Address objects, one for every usable IP.
+    def get_all_valid_ip(self) -> list[IPv4Address]:
+        """Return a list of IPv4Address objects, one for every usable IP."""
+        return list(self)
 
-        WARNING: it's slow and can take a huge amount of memory for
-        subnets with a large number of addresses.
-        Use __iter__ instead ('for ip in ...')."""
-        return list(self.__iter__())
-
-    def is_valid_ip(self, ip):
-        """Return true if the given address in amongst the usable addresses,
+    def is_valid_ip(self, ip: Any) -> bool:
+        """Return true if the given address is amongst usable addresses,
         or if the given CIDR is contained in this one."""
         if not isinstance(ip, (IPv4Address, CIDR)):
-            if str(ip).find('/') == -1:
+            if "/" not in str(ip):
                 ip = IPv4Address(ip)
             else:
-                # Support for CIDR strings/objects, an idea of Nicola Novello.
                 ip = CIDR(ip)
         if isinstance(ip, IPv4Address):
             if ip < self._first_ip or ip > self._last_ip:
                 return False
         elif isinstance(ip, CIDR):
-            # NOTE: manage /31 networks; 127.0.0.1/31 is considered to
-            #       be included in 127.0.0.1/8.
-            if ip._nm._ip_dec == 0xFFFFFFFE \
-                    and self._nm._ip_dec != 0xFFFFFFFE:
-                compare_to_first = self._net_ip._ip_dec
-                compare_to_last = self._bc_ip._ip_dec
+            if ip._nm._ip_dec == 0xFFFFFFFE and self._nm._ip_dec != 0xFFFFFFFE:
+                compare_to_first = (
+                    self._net_ip._ip_dec if self._net_ip is not None else self._first_ip._ip_dec
+                )
+                compare_to_last = (
+                    self._bc_ip._ip_dec if self._bc_ip is not None else self._last_ip._ip_dec
+                )
             else:
                 compare_to_first = self._first_ip._ip_dec
                 compare_to_last = self._last_ip._ip_dec
-            if ip._first_ip._ip_dec < compare_to_first or \
-                    ip._last_ip._ip_dec > compare_to_last:
+            if ip._first_ip._ip_dec < compare_to_first or ip._last_ip._ip_dec > compare_to_last:
                 return False
         return True
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Print this CIDR address."""
         return self.get()
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """The representation string for this netmask."""
-        return '<%s/%s CIDR>' % (str(self.get_ip()), str(self.get_netmask()))
+        return f"<{self.get_ip()}/{self.get_netmask()} CIDR>"
 
-    def __len__(self):
+    def __len__(self) -> int:
         """Return the number of usable IP address."""
         return self.get_ip_number()
 
-    def __lt__(self, other):
+    def __lt__(self, other: Any) -> bool:
         if not isinstance(other, self.__class__):
             other = self.__class__(other)
         return self._nm < other._nm
 
-    def __le__(self, other):
+    def __le__(self, other: Any) -> bool:
         if not isinstance(other, self.__class__):
             other = self.__class__(other)
         return self._nm <= other._nm
 
-    def __gt__(self, other):
+    def __gt__(self, other: Any) -> bool:
         if not isinstance(other, self.__class__):
             other = self.__class__(other)
         return self._nm > other._nm
 
-    def __ge__(self, other):
+    def __ge__(self, other: Any) -> bool:
         if not isinstance(other, self.__class__):
             other = self.__class__(other)
         return self._nm >= other._nm
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         if not isinstance(other, self.__class__):
             other = self.__class__(other)
         return self._nm == other._nm
 
-    def __ne__(self, other):
+    def __ne__(self, other: Any) -> bool:
         if not isinstance(other, self.__class__):
             other = self.__class__(other)
         return self._nm != other._nm
 
-    def __contains__(self, item):
+    def __contains__(self, item: Any) -> bool:
         """Return true if the given address in amongst the usable addresses,
         or if the given CIDR is contained in this one."""
         return self.is_valid_ip(item)
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[IPv4Address]:
         """Iterate over IPv4Address objects, one for every usable IP."""
-        for i in range(0, self._ip_num):
+        for i in range(self._ip_num):
             yield IPv4Address(self._first_ip_dec + i, notation=IP_DEC)
 
-    cidr = property(get, set, doc='The represented CIDR.')
-    ip = address = property(get_ip, set_ip, doc='The IP of this CIDR.')
-    nm = netmask = property(get_netmask, set_netmask,
-                            doc='The netmask of this CIDR.')
+    cidr = property(get, set, doc="The represented CIDR.")
+    ip = address = property(get_ip, set_ip, doc="The IP of this CIDR.")
+    nm = netmask = property(get_netmask, set_netmask, doc="The netmask of this CIDR.")
     first_ip = property(get_first_ip)
     last_ip = property(get_last_ip)
     network_ip = property(get_network_ip)

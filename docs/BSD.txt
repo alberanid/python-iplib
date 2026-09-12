@@ -1,4 +1,4 @@
-  Copyright 2001-2018 Davide Alberani <da@erlug.linux.it>
+  Copyright 2001-2026 Davide Alberani <da@mimante.net>
 
 All rights reserved.
 

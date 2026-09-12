@@ -1,267 +1,289 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-import sys, random, unittest
+import random
+import unittest
+
 import iplib
 
-
-# Functions and values to test.
-#   funct_name: (funct, [list of valid values], [list of invalid values])
 FUNCTIONS = {
-    'is_dot': (iplib.is_dot,
-                ['1.2.3.4', '0.0.0.0', '255.255.255.255'],
-                ['1.2.3', '1.2.3.4.5', '-1.2.3.4', '256.0.0.0', '0.0.0.256'
-                    '10', '', 'a', '...', 'a.b.c.d', '1.2.3.']),
-    'is_hex': (iplib.is_hex,
-                ['0', '0x0', '0x000000', '0xffffffff', '0', '123'],
-                ['', '-1', '0xefg', '0x']),
-    'is_bin': (iplib.is_bin,
-                ['00000000000000000000000000000000',
-                    '11111111111111111111111111111111',
-                    '01111111111111111111111111111111'],
-                ['', '0000000000000000000000000000000', '1',
-                    '111111111111111111111111111111111',
-                    '00000000000000000000000000000002']),
-    'is_oct': (iplib.is_oct,
-                ['0', '037777777777', '007777777777', '7777777'],
-                ['', 'a', '040000000000']),
-    'is_dec': (iplib.is_dec,
-                ['0', '4294967295', '294967295'],
-                ['', 'a', '4294967296']),
-    'is_dot_nm': (iplib.is_dot_nm,
-                ['0.0.0.0', '255.255.255.255', '255.0.0.0', '255.255.255.0'],
-                ['', '0.0.0.0.0', '255.255.256.255', '0.255.0.0', 'a', '...',
-                    '0.255.255.255']),
-    'is_hex_nm': (iplib.is_hex_nm,
-                ['0x0', '0xffffffff', '0xff000000', '0xffffff00'],
-                ['', '0xff000001', '0xfeeeeeee']),
-    'is_bin_nm': (iplib.is_bin_nm,
-                ['00000000000000000000000000000000',
-                    '11111111111111111111111111111111',
-                    '11111111000000000000000000000000'],
-                ['', '0', '0000000000000000000000000000000',
-                    '00000000000000000000000000000002']),
-    'is_oct_nm': (iplib.is_oct_nm,
-                ['0', '00', '037777777777', '037700000000', '037777777400'],
-                ['', '-1', '037777777775', '037700000001']),
-    'is_dec_nm': (iplib.is_dec_nm,
-                ['0', '4294967040', '4294967295', '4294967040'],
-                ['', 'a', '4294967039', '4294967293', '4294967296']),
-    'is_bits_nm': (iplib.is_bits_nm,
-                [str(x) for x in range(0, 33)],
-                ['', '-1', '33', 'a']),
-    'is_wildcard_nm': (iplib.is_wildcard_nm,
-                ['255.255.255.255', '0.0.0.0', '0.255.255.255'],
-                ['', '...', 'a.b.c.d', '0.0.0.0.0', '0.255.255.254',
-                    '255.0.255.255', '0.255.255.256']),
+    "is_dot": (
+        iplib.is_dot,
+        ["1.2.3.4", "0.0.0.0", "255.255.255.255"],
+        [
+            "1.2.3",
+            "1.2.3.4.5",
+            "-1.2.3.4",
+            "256.0.0.0",
+            "0.0.0.256",
+            "10",
+            "",
+            "a",
+            "...",
+            "a.b.c.d",
+            "1.2.3.",
+        ],
+    ),
+    "is_hex": (
+        iplib.is_hex,
+        ["0", "0x0", "0x000000", "0xffffffff", "0", "123"],
+        ["", "-1", "0xefg", "0x"],
+    ),
+    "is_bin": (
+        iplib.is_bin,
+        [
+            "00000000000000000000000000000000",
+            "11111111111111111111111111111111",
+            "01111111111111111111111111111111",
+        ],
+        [
+            "",
+            "0000000000000000000000000000000",
+            "1",
+            "111111111111111111111111111111111",
+            "00000000000000000000000000000002",
+        ],
+    ),
+    "is_oct": (
+        iplib.is_oct,
+        ["0", "037777777777", "007777777777", "7777777"],
+        ["", "a", "040000000000"],
+    ),
+    "is_dec": (
+        iplib.is_dec,
+        ["0", "4294967295", "294967295"],
+        ["", "a", "4294967296"],
+    ),
+    "is_dot_nm": (
+        iplib.is_dot_nm,
+        ["0.0.0.0", "255.255.255.255", "255.0.0.0", "255.255.255.0"],
+        [
+            "",
+            "0.0.0.0.0",
+            "255.255.256.255",
+            "0.255.0.0",
+            "a",
+            "...",
+            "0.255.255.255",
+        ],
+    ),
+    "is_hex_nm": (
+        iplib.is_hex_nm,
+        ["0x0", "0xffffffff", "0xff000000", "0xffffff00"],
+        ["", "0xff000001", "0xfeeeeeee"],
+    ),
+    "is_bin_nm": (
+        iplib.is_bin_nm,
+        [
+            "00000000000000000000000000000000",
+            "11111111111111111111111111111111",
+            "11111111000000000000000000000000",
+        ],
+        [
+            "",
+            "0",
+            "0000000000000000000000000000000",
+            "00000000000000000000000000000002",
+        ],
+    ),
+    "is_oct_nm": (
+        iplib.is_oct_nm,
+        ["0", "00", "037777777777", "037700000000", "037777777400"],
+        ["", "-1", "037777777775", "037700000001"],
+    ),
+    "is_dec_nm": (
+        iplib.is_dec_nm,
+        ["0", "4294967040", "4294967295", "4294967040"],
+        ["", "a", "4294967039", "4294967293", "4294967296"],
+    ),
+    "is_bits_nm": (
+        iplib.is_bits_nm,
+        [str(x) for x in range(0, 33)],
+        ["", "-1", "33", "a"],
+    ),
+    "is_wildcard_nm": (
+        iplib.is_wildcard_nm,
+        ["255.255.255.255", "0.0.0.0", "0.255.255.255"],
+        [
+            "",
+            "...",
+            "a.b.c.d",
+            "0.0.0.0.0",
+            "0.255.255.254",
+            "255.0.255.255",
+            "0.255.255.256",
+        ],
+    ),
 }
 
 
-class MyTestResult(unittest.TestResult):
-    def addFailure(self, test, err):
-        errtxt = 'FAILURE (function %s): %s ' % \
-                    (test.functName, test.currentValue)
-        if test.shouldBevalid:
-            errtxt += 'should NOT be VALID!'
-        else:
-            errtxt += 'should be VALID!'
-        errtxt += '\n'
-        sys.stderr.write(errtxt)
-        unittest.TestResult.addFailure(self, test, err)
+class TestNotations(unittest.TestCase):
+    """Test functions used to check if an IP or netmask is in a given notation."""
 
-mytestres = MyTestResult()
-
-
-class NotationsTest(unittest.TestCase):
-    """Test functions used to check if an IP is in a given notation."""
-    currentValue = None
-    shouldBevalid = None
-
-    def defaultTestResult(self): return mytestres
-
-
-def runNotationsTest():
-    for key in FUNCTIONS:
-        print('TESTING %s... ' % key)
-        funct, valid, invalid = FUNCTIONS[key]
-        def runTest(self):
-            self.shouldBevalid = True
-            self.functName = key
-            for valid_val in valid:
-                self.currentValue = valid_val
-                self.assertTrue(funct(valid_val))
-            self.shouldBevalid = False
-            for invalid_val in invalid:
-                self.currentValue = invalid_val
-                self.assertFalse(funct(invalid_val))
-        setattr(NotationsTest, 'runTest', runTest)
-        test = NotationsTest()
-        test.run()
+    def test_notations(self):
+        for funct_name, (func, valid, invalid) in FUNCTIONS.items():
+            with self.subTest(function=funct_name):
+                for val in valid:
+                    with self.subTest(val=val, expected=True):
+                        self.assertTrue(func(val), f"{funct_name}({val!r}) should be True")
+                for val in invalid:
+                    with self.subTest(val=val, expected=False):
+                        self.assertFalse(func(val), f"{funct_name}({val!r}) should be False")
 
 
 class TestConvert(unittest.TestCase):
     """Test conversion amongst different notations."""
+
     def test_ip(self):
-        """Generate a number of random decimal IP; convert every IP in
-        other notations and back, checking for differences."""
-        testDecIPs = ['0', '4294967295']
-        while len(testDecIPs) < 10000:
-            randIP = str(random.randrange(4294967296))
-            if randIP not in testDecIPs:
-                testDecIPs.append(randIP)
-        for ip in testDecIPs:
-            for notation in ('hex', 'bin', 'oct', 'dec'):
-                converted = iplib.convert(ip, notation=notation,
-                                            inotation=iplib.IP_DEC, check=0)
-                reverted = iplib.convert(converted, notation=iplib.IP_DEC,
-                                            inotation=notation, check=0)
-                self.assertFalse(ip != reverted)
+        test_dec_ips = ["0", "4294967295"]
+        while len(test_dec_ips) < 1000:
+            rand_ip = str(random.randrange(4294967296))
+            if rand_ip not in test_dec_ips:
+                test_dec_ips.append(rand_ip)
+        for ip in test_dec_ips:
+            for notation in ("hex", "bin", "oct", "dec"):
+                converted = iplib.convert(ip, notation=notation, inotation=iplib.IP_DEC, check=False)
+                reverted = iplib.convert(converted, notation=iplib.IP_DEC, inotation=notation, check=False)
+                self.assertEqual(ip, str(reverted))
 
     def test_nm(self):
-        """convert every valid decimal NM in other notations and back,
-        checking for differences."""
-        testBitNMs = [str(x) for x in list(iplib.VALID_NETMASKS.keys())]
-        notations = [x[0] for x in list(iplib.NOTATION_MAP.values())]
-        notations.remove('unknown')
-        for nm in testBitNMs:
+        test_bit_nms = [str(x) for x in iplib.VALID_NETMASKS.keys()]
+        notations = [x[0] for x in iplib.NOTATION_MAP.values()]
+        notations.remove("unknown")
+        for nm in test_bit_nms:
             for notation in notations:
-                converted = iplib.convert_nm(nm, notation=notation,
-                                            inotation=iplib.NM_BITS, check=0)
-                reverted = iplib.convert_nm(converted, notation=iplib.NM_BITS,
-                                            inotation=notation, check=0)
-                self.assertFalse(nm != reverted)
+                converted = iplib.convert_nm(nm, notation=notation, inotation=iplib.NM_BITS, check=False)
+                reverted = iplib.convert_nm(converted, notation=iplib.NM_BITS, inotation=notation, check=False)
+                self.assertEqual(nm, str(reverted))
 
 
 class TestIPv4Address(unittest.TestCase):
     def test_ip1(self):
-        ip = iplib.IPv4Address('127.0.0.1')
-        self.assertFalse(ip != '127.0.0.1')
-        self.assertFalse(ip >= '127.0.0.2')
-        self.assertFalse(ip <= '127.0.0.0')
-        self.assertTrue(ip == '127.0.0.1')
-        self.assertTrue(ip == iplib.IPv4Address('127.0.0.1'))
+        ip = iplib.IPv4Address("127.0.0.1")
+        self.assertEqual(ip, "127.0.0.1")
+        self.assertLess(ip, "127.0.0.2")
+        self.assertGreater(ip, "127.0.0.0")
+        self.assertEqual(ip, "127.0.0.1")
+        self.assertEqual(ip, iplib.IPv4Address("127.0.0.1"))
 
     def test_ip2(self):
-        ip = iplib.IPv4Address('127.0.0.1')
-        self.assertTrue(ip.get_dot() == '127.0.0.1')
-        self.assertTrue(ip.get_hex() == '0x7f000001')
-        self.assertTrue(hex(ip) == '0x7f000001')
-        self.assertTrue(ip.get_bin() == '01111111000000000000000000000001')
-        self.assertTrue(ip.get_dec() == '2130706433')
-        self.assertTrue(int(ip) == 2130706433)
-        self.assertTrue(ip.get_oct() in ('017700000001', '0o17700000001'))
-        self.assertTrue(oct(ip) in ('017700000001', '0o17700000001'))
+        ip = iplib.IPv4Address("127.0.0.1")
+        self.assertEqual(ip.get_dot(), "127.0.0.1")
+        self.assertEqual(ip.get_hex(), "0x7f000001")
+        self.assertEqual(hex(ip), "0x7f000001")
+        self.assertEqual(ip.get_bin(), "01111111000000000000000000000001")
+        self.assertEqual(ip.get_dec(), "2130706433")
+        self.assertEqual(int(ip), 2130706433)
+        self.assertIn(ip.get_oct(), ("017700000001", "0o17700000001"))
+        self.assertIn(oct(ip), ("017700000001", "0o17700000001"))
 
     def test_ip3(self):
-        ip = iplib.IPv4Address('127.0.0.1')
-        self.assertTrue(ip + 0 == ip)
-        self.assertTrue(ip - 0 == ip)
+        ip = iplib.IPv4Address("127.0.0.1")
+        self.assertEqual(ip + 0, ip)
+        self.assertEqual(ip - 0, ip)
 
     def test_ip4(self):
-        ip1 = iplib.IPv4Address('127.0.0.1')
-        ip2 = iplib.IPv4Address('127.0.0.1')
-        self.assertFalse(ip1 is ip2)
-        self.assertFalse(ip1 != ip2)
-        self.assertFalse(ip1 is ip1 + 0)
-        self.assertFalse(ip1 is ip1 - 0)
-        self.assertFalse(ip1 + 1 != iplib.IPv4Address('127.0.0.2'))
-        self.assertFalse(ip1 - 1 != iplib.IPv4Address('127.0.0.0'))
-        self.assertFalse(1 + ip1 != iplib.IPv4Address('127.0.0.2'))
-        self.assertFalse(1 - ip1 != iplib.IPv4Address('127.0.0.0'))
+        ip1 = iplib.IPv4Address("127.0.0.1")
+        ip2 = iplib.IPv4Address("127.0.0.1")
+        self.assertIsNot(ip1, ip2)
+        self.assertEqual(ip1, ip2)
+        self.assertIsNot(ip1, ip1 + 0)
+        self.assertIsNot(ip1, ip1 - 0)
+        self.assertEqual(ip1 + 1, iplib.IPv4Address("127.0.0.2"))
+        self.assertEqual(ip1 - 1, iplib.IPv4Address("127.0.0.0"))
+        self.assertEqual(1 + ip1, iplib.IPv4Address("127.0.0.2"))
+        self.assertEqual(1 - ip1, iplib.IPv4Address("127.0.0.0"))
         _idip1 = id(ip1)
         ip1 += 0
-        self.assertFalse(id(ip1) != _idip1)
+        self.assertEqual(id(ip1), _idip1)
         ip1 += 1
-        self.assertFalse(id(ip1) != _idip1)
+        self.assertEqual(id(ip1), _idip1)
         ip1 -= 1
-        self.assertFalse(id(ip1) != _idip1)
+        self.assertEqual(id(ip1), _idip1)
         ip1 -= 0
-        self.assertFalse(id(ip1) != _idip1)
+        self.assertEqual(id(ip1), _idip1)
 
 
 class TestIPv4NetMask(unittest.TestCase):
     def test_nm1(self):
-        nm = iplib.IPv4NetMask('255.0.0.0')
-        self.assertTrue(nm == '255.0.0.0')
-        self.assertTrue(nm == '037700000000')
-        self.assertTrue(nm == '4278190080')
-        self.assertTrue(nm == '8')
+        nm = iplib.IPv4NetMask("255.0.0.0")
+        self.assertEqual(nm, "255.0.0.0")
+        self.assertEqual(nm, "037700000000")
+        self.assertEqual(nm, "4278190080")
+        self.assertEqual(nm, "8")
 
     def test_nm2(self):
-        nm = iplib.IPv4NetMask('255.0.0.0')
-        self.assertTrue(nm.get_bits() == '8')
-        self.assertTrue(nm.get_wildcard() == '0.255.255.255')
+        nm = iplib.IPv4NetMask("255.0.0.0")
+        self.assertEqual(nm.get_bits(), "8")
+        self.assertEqual(nm.get_wildcard(), "0.255.255.255")
+
 
 class TestCIDR(unittest.TestCase):
     def test_cidr1(self):
-        cidr1 = iplib.CIDR('127.0.0.1/28')
-        cidr2 = iplib.CIDR('127.0.0.1', '28')
-        self.assertFalse(cidr1 != cidr2)
+        cidr1 = iplib.CIDR("127.0.0.1/28")
+        cidr2 = iplib.CIDR("127.0.0.1", "28")
+        self.assertEqual(cidr1, cidr2)
 
     def test_cidr2(self):
-        cidr1 = iplib.CIDR('127.0.0.1/28')
-        cidr2 = iplib.CIDR('0x7f000001', '037777777760')
-        self.assertFalse(cidr1 != cidr2)
+        cidr1 = iplib.CIDR("127.0.0.1/28")
+        cidr2 = iplib.CIDR("0x7f000001", "037777777760")
+        self.assertEqual(cidr1, cidr2)
 
     def test_cidr3(self):
-        cidr1 = iplib.CIDR('127.0.0.1/28')
-        cidr2 = iplib.CIDR('127.0.0.1/8')
-        self.assertFalse(cidr1 >= cidr2)
+        cidr1 = iplib.CIDR("127.0.0.1/28")
+        cidr2 = iplib.CIDR("127.0.0.1/8")
+        self.assertLess(cidr1, cidr2)
 
     def test_cidr4(self):
-        cidr1 = iplib.CIDR('127.0.0.1/26')
-        cidr2 = iplib.CIDR('127.0.0.2/26')
-        self.assertFalse(cidr1 >= cidr2)
+        cidr1 = iplib.CIDR("127.0.0.1/26")
+        cidr2 = iplib.CIDR("127.0.0.2/26")
+        self.assertEqual(cidr1, cidr2)
 
     def test_cidr5(self):
-        cidr = iplib.CIDR('127.0.0.1/10')
-        ip1 = iplib.IPv4Address('127.0.0.1')
-        ip2 = iplib.IPv4Address('127.0.0.2')
-        ip3 = iplib.IPv4Address('127.20.10.5')
-        ip4 = iplib.IPv4Address('127.63.255.254')
-        ipN = iplib.IPv4Address('127.0.0.0')
-        ipB = iplib.IPv4Address('127.63.255.255')
-        self.assertTrue(ip1 in cidr)
-        self.assertTrue(ip2 in cidr)
-        self.assertTrue(ip3 in cidr)
-        self.assertTrue(ip4 in cidr)
-        self.assertFalse(ipN in cidr)
-        self.assertFalse(ipB in cidr)
+        cidr = iplib.CIDR("127.0.0.1/10")
+        ip1 = iplib.IPv4Address("127.0.0.1")
+        ip2 = iplib.IPv4Address("127.0.0.2")
+        ip3 = iplib.IPv4Address("127.20.10.5")
+        ip4 = iplib.IPv4Address("127.63.255.254")
+        ipN = iplib.IPv4Address("127.0.0.0")
+        ipB = iplib.IPv4Address("127.63.255.255")
+        self.assertIn(ip1, cidr)
+        self.assertIn(ip2, cidr)
+        self.assertIn(ip3, cidr)
+        self.assertIn(ip4, cidr)
+        self.assertNotIn(ipN, cidr)
+        self.assertNotIn(ipB, cidr)
 
     def test_cidr6(self):
-        cidr = iplib.CIDR('127.0.0.1/31')
-        ip1 = iplib.IPv4Address('127.0.0.0')
-        ip2 = iplib.IPv4Address('127.0.0.1')
-        self.assertTrue(ip1 in cidr)
-        self.assertTrue(ip2 in cidr)
-        self.assertFalse(iplib.IPv4Address('126.255.255.255') in cidr)
-        self.assertFalse(iplib.IPv4Address('127.0.0.2') in cidr)
+        cidr = iplib.CIDR("127.0.0.1/31")
+        ip1 = iplib.IPv4Address("127.0.0.0")
+        ip2 = iplib.IPv4Address("127.0.0.1")
+        self.assertIn(ip1, cidr)
+        self.assertIn(ip2, cidr)
+        self.assertNotIn(iplib.IPv4Address("126.255.255.255"), cidr)
+        self.assertNotIn(iplib.IPv4Address("127.0.0.2"), cidr)
 
     def test_cidr7(self):
-        cidr = iplib.CIDR('127.0.0.1/32')
-        ip1 = iplib.IPv4Address('127.0.0.1')
-        self.assertTrue(ip1 in cidr)
-        self.assertFalse(iplib.IPv4Address('127.0.0.0') in cidr)
-        self.assertFalse(iplib.IPv4Address('127.0.0.2') in cidr)
+        cidr = iplib.CIDR("127.0.0.1/32")
+        ip1 = iplib.IPv4Address("127.0.0.1")
+        self.assertIn(ip1, cidr)
+        self.assertNotIn(iplib.IPv4Address("127.0.0.0"), cidr)
+        self.assertNotIn(iplib.IPv4Address("127.0.0.2"), cidr)
 
     def test_cidr8(self):
-        cidrBIG = iplib.CIDR('192.0.0.0/8')
-        cidrSMALL = iplib.CIDR('192.0.0.0/30')
-        cidrFUNNY = iplib.CIDR('192.0.0.0/31')
-        self.assertFalse(cidrBIG in cidrSMALL)
-        self.assertTrue(cidrSMALL in cidrBIG)
-        self.assertTrue(cidrBIG in cidrBIG)
-        self.assertTrue(cidrSMALL in cidrSMALL)
-        self.assertFalse(cidrSMALL in cidrFUNNY)
-        self.assertTrue(cidrFUNNY in cidrSMALL)
+        cidrBIG = iplib.CIDR("192.0.0.0/8")
+        cidrSMALL = iplib.CIDR("192.0.0.0/30")
+        cidrFUNNY = iplib.CIDR("192.0.0.0/31")
+        self.assertNotIn(cidrBIG, cidrSMALL)
+        self.assertIn(cidrSMALL, cidrBIG)
+        self.assertIn(cidrBIG, cidrBIG)
+        self.assertIn(cidrSMALL, cidrSMALL)
+        self.assertNotIn(cidrSMALL, cidrFUNNY)
+        self.assertIn(cidrFUNNY, cidrSMALL)
 
     def test_cidr_len(self):
-        cidr = iplib.CIDR('127.0.0.1/28')
-        self.assertFalse(len(cidr.get_all_valid_ip()) != 14)
+        cidr = iplib.CIDR("127.0.0.1/28")
+        self.assertEqual(len(cidr.get_all_valid_ip()), 14)
 
 
-if __name__ == '__main__':
-    runNotationsTest()
-    print('TESTING conversion... ')
+if __name__ == "__main__":
     unittest.main()
-
-

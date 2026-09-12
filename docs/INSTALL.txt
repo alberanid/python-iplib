@@ -1,15 +1,16 @@
-#  Requirements
+# Requirements
 
-* Python version 3 or later.
+* Python 3.10 or later.
 
 
-#  Install
+# Install
 
-Type, as root user:
+Using pip:
 
-   python ./setup.py install
+   pip install .
 
-If it doesn't work, copy the 'iplib.py' module it in your local site-packages directory.
+Or in editable mode:
 
-Copy the example scripts 'ipconv', 'nmconv' and 'cidrinfo' from the ./bin directory to a directory included in your PATH environment variable (/usr/bin/ or /usr/local/bin/).
+   pip install -e .
 
+The example scripts `ipconv`, `nmconv`, and `cidrinfo` are automatically installed into your Python environment's bin directory.

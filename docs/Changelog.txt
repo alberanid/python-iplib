@@ -1,3 +1,11 @@
+  version 1.2.2
+- Modernized codebase for Python 3.10 to 3.16+.
+- Added type annotations across the library.
+- Updated setup with pyproject.toml (PEP 621).
+- Updated test suite and converted CLI tools to argparse.
+- Dropped compatibility with Python 2.
+
+
   version 1.2 (22 jun 2018)
 - Python 3 compatibility.
 
@@ -32,5 +40,3 @@
 
   version 0.8 (15 feb 2005)
 - support for /31 netmask.
-
-

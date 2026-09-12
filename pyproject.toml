@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "iplib"
+version = "1.2.2"
+description = "convert amongst many different IPv4 notations"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "BSD-3-Clause"}
+authors = [
+    {name = "Davide Alberani", email = "da@mimante.net"}
+]
+maintainers = [
+    {name = "Davide Alberani", email = "da@mimante.net"}
+]
+keywords = [
+    "ip", "address", "quad", "dot", "notation",
+    "binary", "octal", "hexadecimal", "netmask", "cidr", "internet"
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Environment :: No Input/Output (Daemon)",
+    "Intended Audience :: Developers",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: BSD License",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
+    "Programming Language :: Python :: 3.16",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: System :: Networking",
+    "Topic :: Internet",
+    "Topic :: Utilities",
+]
+
+[tool.setuptools]
+py-modules = ["iplib"]
+script-files = ["bin/cidrinfo", "bin/ipconv", "bin/nmconv"]
+
+[project.urls]
+Homepage = "https://github.com/alberanid/python-iplib"
+Repository = "https://github.com/alberanid/python-iplib"
