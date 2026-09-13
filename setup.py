@@ -34,7 +34,7 @@ classifiers = [
 
 params = {
     "name": "iplib",
-    "version": "1.2.2",
+    "version": "1.3.0",
     "description": "convert amongst many different IPv4 notations",
     "long_description": long_desc,
     "author": "Davide Alberani",

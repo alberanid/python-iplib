@@ -36,7 +36,7 @@ from __future__ import annotations
 from collections.abc import Iterator
 from typing import Any
 
-__version__ = "1.2.2"
+__version__ = "1.3.0"
 
 
 # Notation types (with an example in the comment).

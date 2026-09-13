@@ -1,4 +1,4 @@
-  version 1.2.2
+  version 1.3.0
 - Modernized codebase for Python 3.10 to 3.16+.
 - Added type annotations across the library.
 - Updated setup with pyproject.toml (PEP 621).
