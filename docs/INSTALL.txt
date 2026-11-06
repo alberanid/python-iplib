@@ -14,3 +14,11 @@ Or in editable mode:
    pip install -e .
 
 The example scripts `ipconv`, `nmconv`, and `cidrinfo` are automatically installed into your Python environment's bin directory.
+
+
+# Build
+
+To build the source distribution and the wheel (written into `dist/`):
+
+   pip install build
+   python -m build

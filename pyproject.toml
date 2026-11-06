@@ -1,14 +1,15 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=77.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "iplib"
-version = "1.3.0"
+dynamic = ["version"]
 description = "convert amongst many different IPv4 notations"
 readme = "README.md"
 requires-python = ">=3.10"
-license = {text = "BSD-3-Clause"}
+license = "BSD-3-Clause"
+license-files = ["LICENSE"]
 authors = [
     {name = "Davide Alberani", email = "da@mimante.net"}
 ]
@@ -25,7 +26,6 @@ classifiers = [
     "Environment :: No Input/Output (Daemon)",
     "Intended Audience :: Developers",
     "Intended Audience :: End Users/Desktop",
-    "License :: OSI Approved :: BSD License",
     "Natural Language :: English",
     "Operating System :: OS Independent",
     "Programming Language :: Python",
@@ -48,6 +48,11 @@ classifiers = [
 py-modules = ["iplib"]
 script-files = ["bin/cidrinfo", "bin/ipconv", "bin/nmconv"]
 
+[tool.setuptools.dynamic]
+version = {attr = "iplib.__version__"}
+
 [project.urls]
 Homepage = "https://github.com/alberanid/python-iplib"
 Repository = "https://github.com/alberanid/python-iplib"
+Issues = "https://github.com/alberanid/python-iplib/issues"
+Changelog = "https://github.com/alberanid/python-iplib/blob/master/docs/Changelog.txt"
