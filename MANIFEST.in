@@ -1,3 +1,2 @@
 include LICENSE README.md test_iplib.py
 recursive-include docs *
-recursive-include bin *

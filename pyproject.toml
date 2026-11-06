@@ -46,10 +46,15 @@ classifiers = [
 
 [tool.setuptools]
 py-modules = ["iplib"]
-script-files = ["bin/cidrinfo", "bin/ipconv", "bin/nmconv"]
+packages = ["iplib_cli"]
 
 [tool.setuptools.dynamic]
 version = {attr = "iplib.__version__"}
+
+[project.scripts]
+cidrinfo = "iplib_cli.cidrinfo:main"
+ipconv = "iplib_cli.ipconv:main"
+nmconv = "iplib_cli.nmconv:main"
 
 [project.urls]
 Homepage = "https://github.com/alberanid/python-iplib"

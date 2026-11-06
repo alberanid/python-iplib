@@ -1,9 +1,14 @@
 #!/usr/bin/env python3
 
+import contextlib
+import io
 import random
+import sys
 import unittest
+from unittest import mock
 
 import iplib
+from iplib_cli import cidrinfo, ipconv, nmconv
 
 FUNCTIONS = {
     "is_dot": (
@@ -306,6 +311,28 @@ class TestCIDR(unittest.TestCase):
     def test_cidr_len(self):
         cidr = iplib.CIDR("127.0.0.1/28")
         self.assertEqual(len(cidr.get_all_valid_ip()), 14)
+
+
+class CLITestCase(unittest.TestCase):
+    def run_cli(self, main, *args):
+        out = io.StringIO()
+        with mock.patch.object(sys, "argv", ["prog", *args]), contextlib.redirect_stdout(out):
+            main()
+        return out.getvalue()
+
+    def test_ipconv(self):
+        self.assertEqual(self.run_cli(ipconv.main, "-o", "hex", "192.168.0.42"), "0xc0a8002a\n")
+
+    def test_nmconv(self):
+        self.assertEqual(self.run_cli(nmconv.main, "-o", "bits", "255.255.255.0"), "24\n")
+
+    def test_cidrinfo(self):
+        self.assertIn("number of usable IP addresses:254", self.run_cli(cidrinfo.main, "192.168.1.1/24"))
+
+    def test_cidrinfo_invalid(self):
+        with self.assertRaises(SystemExit) as cm, contextlib.redirect_stderr(io.StringIO()):
+            self.run_cli(cidrinfo.main, "not-a-cidr")
+        self.assertEqual(cm.exception.code, 3)
 
 
 if __name__ == "__main__":

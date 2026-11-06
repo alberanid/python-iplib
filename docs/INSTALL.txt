@@ -13,7 +13,7 @@ Or in editable mode:
 
    pip install -e .
 
-The example scripts `ipconv`, `nmconv`, and `cidrinfo` are automatically installed into your Python environment's bin directory.
+The example scripts `ipconv`, `nmconv`, and `cidrinfo` are installed as console commands into your Python environment's bin directory (their source is in the `iplib_cli` package; they can also be run as e.g. `python -m iplib_cli.ipconv`).
 
 
 # Build
